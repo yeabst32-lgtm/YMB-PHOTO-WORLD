@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YMB PHOTO WORLD</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101522;color:white;font-family:Arial,sans-serif}
+header{background:#19243a;padding:22px;text-align:center}
+header h1{color:#39d5ff;margin:5px}
+header p{color:#bbb}
+nav{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;padding:15px}
+button{border:0;padding:11px 16px;border-radius:20px;background:#243752;color:white}
+button:hover{background:#078ac0}
+.search{display:block;width:90%;padding:15px;margin:10px auto;border-radius:12px;border:0}
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;padding:12px}
+.card{background:#202c40;border-radius:12px;overflow:hidden}
+.card img{width:100%;height:160px;object-fit:cover}
+.card button{margin:5px}
+.card p{padding-left:8px}
+footer{text-align:center;padding:25px;color:#aaa}
+</style>
+</head>
+<body>
+
+<header>
+<h1>📸 YMB PHOTO WORLD</h1>
+<p>Your Beautiful Photo Gallery</p>
+</header>
+
+<nav>
+<button onclick="show('All')">All Photos</button>
+<button onclick="show('Nature')">Nature</button>
+<button onclick="show('Cars')">Cars</button>
+<button onclick="show('Football')">Football</button>
+<button onclick="show('Animals')">Animals</button>
+<button onclick="show('Favorites')">❤️ Favorites</button>
+</nav>
+
+<input class="search" id="search" placeholder="🔍 Search photos..." oninput="render()">
+
+<center>
+<label style="background:#087fac;padding:12px;border-radius:20px;display:inline-block">
+➕ Upload Photos
+<input type="file" accept="image/*" multiple hidden onchange="upload(event)">
+</label>
+</center>
+
+<div class="gallery" id="gallery"></div>
+
+<footer>
+<h3>YMB PHOTO WORLD</h3>
+<p>Created with ❤️ by YMB</p>
+<p>© 2026 YMB PHOTO WORLD</p>
+</footer>
+
+<script>
+let photos=[
+["Nature","https://images.unsplash.com/photo-1470770841072-f978cf4d019e"],
+["Nature","https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"],
+["Cars","https://images.unsplash.com/photo-1492144534655-ae79c964c9d7"],
+["Cars","https://images.unsplash.com/photo-1503376780353-7e6692767b70"],
+["Football","https://images.unsplash.com/photo-1522778119026-d647f0596c20"],
+["Football","https://images.unsplash.com/photo-1574629810360-7efbbe195018"],
+["Animals","https://images.unsplash.com/photo-1546182990-dffeafbe841d"],
+["Animals","https://images.unsplash.com/photo-1474511320723-9a56873867b5"]
+].map((p,i)=>({id:i,category:p[0],url:p[1]+'?auto=format&fit=crop&w=700&q=80'}));
+
+let favorites=[];
+
+function show(category){
+window.category=category;
+render();
+}
+
+function render(){
+let q=document.getElementById('search').value.toLowerCase();
+let list=photos.filter(p=>
+(window.category==='All'||!window.category||p.category===window.category|| (window.category==='Favorites'&&favorites.includes(p.id)))
+&&p.category.toLowerCase().includes(q) 
+);
+document.getElementById('gallery').innerHTML=list.map(p=>`
+<div class="card">
+<img src="${p.url}" loading="lazy">
+<p>${p.category}</p>
+<button onclick="favorite(${p.id})">❤️</button>
+<button onclick="downloadPhoto('${p.url}')">⬇ Download</button>
+<button onclick="sharePhoto('${p.url}')">Share</button>
+</div>`).join('')||'<p>No photos found</p>';
+}
+
+function favorite(id){
+if(favorites.includes(id))favorites=favorites.filter(x=>x!==id);
+else favorites.push(id);
+render();
+}
+
+function upload(e){
+[...e.target.files].forEach(file=>{
+let url=URL.createObjectURL(file);
+photos.push({id:Date.now()+Math.random(),category:'My Photos',url});
+});
+render();
+}
+
+async function downloadPhoto(url){
+try{
+let r=await fetch(url);
+let b=await r.blob();
+let a=document.createElement('a');
+a.href=URL.createObjectURL(b);
+a.download='YMB-photo.jpg';
+a.click();
+}catch(e){alert('Download failed');}
+}
+
+async function sharePhoto(url){
+if(navigator.share){
+try{await navigator.share({title:'YMB PHOTO WORLD',url:url});}catch(e){}
+}else{
+alert('Sharing is not supported on this browser.');
+}
+}
+
+show('All');
+</script>
+</body>
+</html>
